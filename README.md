@@ -21,20 +21,23 @@ These paths still need integration tests with a compatible persistence implement
 
 The defaults in [`resources/config.yml`](resources/config.yml) define `firstJoin.amount`, `firstJoin.level`, `customName`, `defaultBlock`, sound switches, and `oreGenerators.level_*` ore weights and delays. Setting `firstJoin.amount` to `0` disables the first-join grant. There are no commands or permissions in `plugin.yml`.
 
+Ore weights must be positive whole numbers. Decimal integer strings within range are accepted. Noninteger and nonpositive entries are ignored. If a level has no valid weights, or a weight or their sum exceeds the integer range, no ore is selected. Check each configured level before enabling the experimental generator.
+
 Generator item metadata uses a legacy string such as `isOreGenerator:true owner:NhanAZ level:1 durability:1000`. The parser now treats malformed values and an explicit `false` flag as non-generators. It also accepts spaces in a player's name. This change does not migrate saved block data.
 
 ## Migration and build gate
 
 The original [Cosmoverse BlockData virion](https://github.com/Cosmoverse/BlockData) stores custom NBT block data. The current NhanAZ BlockData library stores JSON-compatible values in a per-world LevelDB database. Before replacing the dependency, a migration must identify the old data path and key format, preserve existing generator metadata, and prove save and reload behavior using copied test worlds. No migration or compatible DevTools PHAR is available yet.
 
-The two focused PHP fixtures can run without a server.
+The three focused PHP fixtures can run without a server.
 
 ```sh
 php tests/parser-data.php
 php tests/first-join.php
+php tests/weighted-ore-selector.php
 ```
 
-Both fixtures cover local logic only. They do not establish PHPStan max, dependency compatibility, PHAR build, or runtime behavior.
+These fixtures cover local logic only. They do not establish full-source PHPStan max, dependency compatibility, PHAR build, or runtime behavior.
 
 ## License and support
 

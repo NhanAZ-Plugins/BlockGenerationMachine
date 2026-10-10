@@ -14,6 +14,7 @@ use NhanAZ\OreGenerator\events\onPlayerJoin;
 use NhanAZ\OreGenerator\utils\SingletonTrait;
 use NhanAZ\OreGenerator\utils\Sound;
 use NhanAZ\OreGenerator\utils\StringToBlock;
+use NhanAZ\OreGenerator\utils\WeightedOreSelector;
 use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -21,10 +22,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\world\Position;
-use function array_push;
-use function array_rand;
 use function is_array;
-use function shuffle;
 use function str_replace;
 use function strval;
 
@@ -86,18 +84,12 @@ class OreGenerator extends PluginBase {
 	}
 
 	public function randomOre(int $level) : ?Block {
-		$oreArr = [];
 		$ores = $this->getConfig()->getNested("oreGenerators.level_{$level}.ores");
-		if (is_array($ores)) {
-			foreach ($ores as $ore => $ratio) {
-				for ($i = 1; $i <= $ratio; $i++) {
-					array_push($oreArr, $ore);
-				}
-			}
+		if (!is_array($ores)) {
+			return null;
 		}
-		shuffle($oreArr);
-		$oreString = strval($oreArr[array_rand($oreArr)]);
-		return StringToBlock::parse($oreString);
+		$ore = WeightedOreSelector::choose($ores);
+		return $ore === null ? null : StringToBlock::parse($ore);
 	}
 
 	public function getManager() : BlockDataWorldManager {
