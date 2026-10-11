@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace NhanAZ\OreGenerator\events;
 
+use NhanAZ\OreGenerator\config\ConfigManager;
 use NhanAZ\OreGenerator\data\OreGeneratorData;
 use NhanAZ\OreGenerator\OreGenerator;
 use NhanAZ\OreGenerator\utils\ParserData;
 use NhanAZ\OreGenerator\utils\Sound;
-use NhanAZ\OreGenerator\utils\StringToBlock;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\math\Facing;
 use function is_null;
-use function strval;
 
 class onBlockPlace implements Listener {
 
@@ -46,10 +45,7 @@ class onBlockPlace implements Listener {
 					if (OreGenerator::getInstance()->getConfig()->getNested("sounds.invalidPosition")) {
 						Sound::playFizz($blockPos);
 					}
-					$block = StringToBlock::parse(strval(OreGenerator::getInstance()->getConfig()->get("defaultBlock")));
-					if (is_null($block)) {
-						$block = VanillaBlocks::COBBLESTONE();
-					}
+					$block = ConfigManager::getDefaultBlock();
 					$blockPos->getWorld()->setBlock($blockPos->add(0, 1, 0), $block);
 				} else {
 					OreGenerator::getInstance()->onInvalidPosition($event, $blockPos);

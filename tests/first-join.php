@@ -32,10 +32,11 @@ namespace NhanAZ\OreGenerator {
 	use pocketmine\player\Player;
 
 	final class TestConfig {
-		public int $amount = 2;
+		public mixed $amount = 2;
+		public mixed $level = 3;
 
-		public function getNested(string $path) : int {
-			return $path === 'firstJoin.amount' ? $this->amount : 3;
+		public function getNested(string $path) : mixed {
+			return $path === 'firstJoin.amount' ? $this->amount : $this->level;
 		}
 	}
 
@@ -89,6 +90,19 @@ namespace {
 	if (count($plugin->grants) !== 1) {
 		throw new \RuntimeException('Disabled first-join grant still ran.');
 	}
+	$plugin->config->amount = ['invalid'];
+	$listener->onPlayerJoin(new PlayerJoinEvent(new Player(false)));
+	$plugin->config->amount = '2';
+	$plugin->config->level = 0;
+	$listener->onPlayerJoin(new PlayerJoinEvent(new Player(false)));
+	if (count($plugin->grants) !== 1) {
+		throw new \RuntimeException('Invalid first-join configuration granted an item.');
+	}
+	$plugin->config->level = '3';
+	$listener->onPlayerJoin(new PlayerJoinEvent(new Player(false)));
+	if (count($plugin->grants) !== 2 || $plugin->grants[1][1] !== 2 || $plugin->grants[1][2] !== 3) {
+		throw new \RuntimeException('Numeric first-join configuration was rejected.');
+	}
 
-	echo "PASS: first join, returning player, and disabled grant\n";
+	echo "PASS: first join, returning player, disabled and invalid grants\n";
 }

@@ -36,12 +36,13 @@ jobs:
         shell: bash
         run: find src tests -name '*.php' -print0 | xargs -0 -n1 php -l
 
-      - name: Check generator metadata and ore weights
+      - name: Check generator metadata, ore weights, and default block
         shell: bash
         run: |
           php tests/parser-data.php
           php tests/first-join.php
           php tests/weighted-ore-selector.php
+          php tests/default-block.php
 
       - name: Analyze plugin at PHPStan maximum level
         uses: NhanAZ/DevTools@6606444fc32787a3e50275fdb668c2310e899740 # v1.0.3

@@ -7,7 +7,8 @@ namespace NhanAZ\OreGenerator\events;
 use NhanAZ\OreGenerator\OreGenerator;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
-use function intval;
+use function filter_var;
+use function is_int;
 
 class onPlayerJoin implements Listener {
 
@@ -17,9 +18,9 @@ class onPlayerJoin implements Listener {
 			return;
 		}
 		$getConfig = OreGenerator::getInstance()->getConfig();
-		$firstJoin_amount = intval($getConfig->getNested("firstJoin.amount"));
-		$firstJoin_level = intval($getConfig->getNested("firstJoin.level"));
-		if ($firstJoin_amount > 0) {
+		$firstJoin_amount = filter_var($getConfig->getNested("firstJoin.amount"), FILTER_VALIDATE_INT);
+		$firstJoin_level = filter_var($getConfig->getNested("firstJoin.level"), FILTER_VALIDATE_INT);
+		if (is_int($firstJoin_amount) && $firstJoin_amount > 0 && is_int($firstJoin_level) && $firstJoin_level > 0) {
 			OreGenerator::getInstance()->giveOreGenerator($player, $firstJoin_amount, $firstJoin_level);
 		}
 	}

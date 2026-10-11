@@ -29,12 +29,13 @@ Generator item metadata uses a legacy string such as `isOreGenerator:true owner:
 
 The original [Cosmoverse BlockData virion](https://github.com/Cosmoverse/BlockData) stores custom NBT block data. The current NhanAZ BlockData library stores JSON-compatible values in a per-world LevelDB database. Before replacing the dependency, a migration must identify the old data path and key format, preserve existing generator metadata, and prove save and reload behavior using copied test worlds. No migration or compatible DevTools PHAR is available yet.
 
-The three focused PHP fixtures can run without a server.
+The focused PHP fixtures can run without a server.
 
 ```sh
 php tests/parser-data.php
 php tests/first-join.php
 php tests/weighted-ore-selector.php
+php tests/default-block.php
 ```
 
 These fixtures cover local logic only. They do not establish full-source PHPStan max, dependency compatibility, PHAR build, or runtime behavior.
