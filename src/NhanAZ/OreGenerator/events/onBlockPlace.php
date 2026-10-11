@@ -43,6 +43,11 @@ class onBlockPlace implements Listener {
 		$tempData = $item->getCustomBlockData()->getString("data");
 		$data = ParserData::parse($tempData);
 		if ($data["isOreGenerator"]) {
+			if (!ConfigManager::canPlayerUseGenerator($data["level"], $data["owner"], $event->getPlayer()->getName())) {
+				$event->cancel();
+				$event->getPlayer()->sendMessage("Only the generator owner can place this item.");
+				return;
+			}
 			if ($blockPos->y == self::HIGHEST_BUILDABLE_Y) {
 				OreGenerator::getInstance()->onInvalidPosition($event, $blockPos);
 				return;

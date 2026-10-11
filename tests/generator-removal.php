@@ -79,14 +79,21 @@ namespace pocketmine\block {
 
 namespace pocketmine\event\block {
     use pocketmine\block\Block;
+    use pocketmine\player\Player;
 
     final class BlockBreakEvent {
         private bool $cancelled = false;
 
-        public function __construct(private Block $block) {}
+        public function __construct(private Block $block, private ?Player $player = null) {
+            $this->player ??= new Player('Tester');
+        }
 
         public function getBlock() : Block {
             return $this->block;
+        }
+
+        public function getPlayer() : Player {
+            return $this->player;
         }
 
         public function isCancelled() : bool {
@@ -99,6 +106,23 @@ namespace pocketmine\event\block {
     }
 }
 
+namespace pocketmine\player {
+    final class Player {
+        /** @var list<string> */
+        public array $messages = [];
+
+        public function __construct(private string $name) {}
+
+        public function getName() : string {
+            return $this->name;
+        }
+
+        public function sendMessage(string $message) : void {
+            $this->messages[] = $message;
+        }
+    }
+}
+
 namespace pocketmine\scheduler {
     final class ClosureTask {
         public function __construct(public \Closure $callback) {}
@@ -107,8 +131,14 @@ namespace pocketmine\scheduler {
 
 namespace NhanAZ\OreGenerator\config {
     final class ConfigManager {
+        public static bool $ownerMode = true;
+
         public static function getDelayTicks(int $level) : int {
             return 20;
+        }
+
+        public static function canPlayerUseGenerator(int $level, string $owner, string $playerName) : bool {
+            return !self::$ownerMode || strcasecmp($owner, $playerName) === 0;
         }
     }
 }
@@ -238,5 +268,44 @@ namespace {
         }
     }
 
-    echo "Regeneration requires the original generator and metadata\n";
+    foreach (['resource', 'machine'] as $target) {
+        $plugin = new \NhanAZ\OreGenerator\OreGenerator();
+        $world = new \pocketmine\world\World();
+        $generator = new \pocketmine\world\Position(1, 64, 1, $world);
+        $ore = new \pocketmine\world\Position(1, 65, 1, $world);
+        $world->setBlock($generator, \pocketmine\block\VanillaBlocks::LEGACY_STONECUTTER());
+        $world->setBlock($ore, new \pocketmine\block\Block('cobblestone', $ore));
+        $data = 'isOreGenerator:true owner:Tester level:1 durability:1000';
+        $plugin->getStorage()->set($generator, $data);
+        $player = new \pocketmine\player\Player('Visitor');
+        $event = new \pocketmine\event\block\BlockBreakEvent(
+            $world->getBlock($target === 'machine' ? $generator : $ore), $player
+        );
+        (new \NhanAZ\OreGenerator\events\onBlockBreak())->onBreak($event);
+        $plugin->getScheduler()->run();
+        if (!$event->isCancelled() || $player->messages === []
+            || $plugin->getStorage()->get($generator) !== $data
+            || $world->getBlock($generator)->type !== 'stonecutter'
+            || $world->getBlock($ore)->type !== 'cobblestone') {
+            throw new \RuntimeException("Non-owner $target break was not denied without mutation");
+        }
+    }
+
+    \NhanAZ\OreGenerator\config\ConfigManager::$ownerMode = false;
+    $plugin = new \NhanAZ\OreGenerator\OreGenerator();
+    $world = new \pocketmine\world\World();
+    $generator = new \pocketmine\world\Position(1, 64, 1, $world);
+    $ore = new \pocketmine\world\Position(1, 65, 1, $world);
+    $world->setBlock($generator, \pocketmine\block\VanillaBlocks::LEGACY_STONECUTTER());
+    $world->setBlock($ore, new \pocketmine\block\Block('cobblestone', $ore));
+    $plugin->getStorage()->set($generator, 'isOreGenerator:true owner:Tester level:1 durability:1000');
+    $event = new \pocketmine\event\block\BlockBreakEvent($world->getBlock($ore), new \pocketmine\player\Player('Visitor'));
+    (new \NhanAZ\OreGenerator\events\onBlockBreak())->onBreak($event);
+    $world->setBlock($ore, \pocketmine\block\VanillaBlocks::AIR());
+    $plugin->getScheduler()->run();
+    if ($event->isCancelled() || $world->getBlock($ore)->type !== 'stone') {
+        throw new \RuntimeException('Shared generator did not regenerate after visitor break');
+    }
+
+    echo "Regeneration requires original metadata and enforces owner mode\n";
 }

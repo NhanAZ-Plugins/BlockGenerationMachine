@@ -53,13 +53,14 @@ namespace NhanAZ\OreGenerator {
 	final class TestConfig {
 		public mixed $defaultBlock = 'stone';
 		public mixed $delayTime = 3;
+		public mixed $ownerMode = true;
 
 		public function get(string $key) : mixed {
 			return $this->defaultBlock;
 		}
 
 		public function getNested(string $key) : mixed {
-			return $this->delayTime;
+			return str_ends_with($key, '.ownerMode') ? $this->ownerMode : $this->delayTime;
 		}
 	}
 
@@ -141,5 +142,17 @@ namespace {
 		}
 	}
 
-	echo "PASS: modern, legacy, invalid default blocks, and delay seconds\n";
+	foreach ([true, null, 'false'] as $protected) {
+		$plugin->config->ownerMode = $protected;
+		if (!ConfigManager::canPlayerUseGenerator(1, 'Alice', 'alice')
+			|| ConfigManager::canPlayerUseGenerator(1, 'Alice', 'Bob')) {
+			throw new \RuntimeException('Owner mode did not protect a generator');
+		}
+	}
+	$plugin->config->ownerMode = false;
+	if (!ConfigManager::canPlayerUseGenerator(1, 'Alice', 'Bob')) {
+		throw new \RuntimeException('Explicit shared mode did not allow a visitor');
+	}
+
+	echo "PASS: default blocks, delay seconds, and owner mode\n";
 }

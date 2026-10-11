@@ -51,6 +51,7 @@ jobs:
           php tests/first-join.php
           php tests/weighted-ore-selector.php
           php tests/default-block.php
+          php tests/owner-placement.php
 
       - name: Check regeneration after generator removal
         run: php tests/generator-removal.php

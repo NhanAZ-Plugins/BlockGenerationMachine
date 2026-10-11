@@ -12,6 +12,7 @@ use function get_debug_type;
 use function intdiv;
 use function is_int;
 use function is_string;
+use function strcasecmp;
 
 class ConfigManager {
 
@@ -40,5 +41,10 @@ class ConfigManager {
 			return null;
 		}
 		return $seconds * 20;
+	}
+
+	public static function canPlayerUseGenerator(int $level, string $owner, string $playerName) : bool {
+		$ownerMode = OreGenerator::getInstance()->getConfig()->getNested("oreGenerators.level_{$level}.ownerMode");
+		return $ownerMode === false || strcasecmp($owner, $playerName) === 0;
 	}
 }

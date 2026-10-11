@@ -35,6 +35,11 @@ class onBlockBreak implements Listener {
 
 		if ($block->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER())) {
 			if ($parsedData["isOreGenerator"]) {
+				if (!ConfigManager::canPlayerUseGenerator($parsedData["level"], $parsedData["owner"], $event->getPlayer()->getName())) {
+					$event->cancel();
+					$event->getPlayer()->sendMessage("Only the generator owner can break this machine.");
+					return;
+				}
 				$block = VanillaBlocks::LEGACY_STONECUTTER();
 				$item = $block->asItem();
 				$compound = new CompoundTag();
@@ -63,6 +68,11 @@ class onBlockBreak implements Listener {
 		if ($getSideDOWN->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER())) {
 			$level = (int) $parsedData["level"];
 			if ($parsedData["isOreGenerator"]) {
+				if (!ConfigManager::canPlayerUseGenerator($level, $parsedData["owner"], $event->getPlayer()->getName())) {
+					$event->cancel();
+					$event->getPlayer()->sendMessage("Only the generator owner can break this resource.");
+					return;
+				}
 				$delayTicks = ConfigManager::getDelayTicks($level);
 				if ($delayTicks === null) {
 					OreGenerator::getInstance()->getLogger()->warning("Invalid delayTime for ore generator level {$level}");
