@@ -43,7 +43,7 @@ php tests/default-block.php
 php tests/legacy-storage.php virions/BlockData/vendor/autoload.php
 ```
 
-The legacy storage fixture needs the released BlockData checkout and its Composer dependencies. The workflow checks these fixtures, PHPStan max, and a DevTools PHAR build. The isolated server probe also verified exact NBT decoding, JSON persistence, deletion markers, restart behavior, retention of the old record, and synthetic placement and break events. It did not use a connected player.
+The legacy storage fixture needs the released BlockData checkout and its Composer dependencies. The workflow checks these fixtures, PHPStan max, and a DevTools PHAR build, then uploads the verified PHAR as a temporary CI artifact. The isolated server probe also verified exact NBT decoding, JSON persistence, deletion markers, restart behavior, retention of the old record, and synthetic placement and break events. It did not use a connected player.
 
 ## License and support
 
