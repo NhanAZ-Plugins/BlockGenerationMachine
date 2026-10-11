@@ -4,7 +4,7 @@ Block Generation Machine is an experimental ore generator plugin for Axolotl-PM.
 
 ## Current status
 
-The plugin now packages the released [NhanAZ BlockData library](https://github.com/NhanAZ-Libraries/BlockData) through DevTools. The source passes PHPStan at maximum level against both the declared API minimum and the newer revision pinned in [CI](.github/workflows/validate.yml). A local PHAR built with DevTools loaded and stopped cleanly on an isolated server. These checks do not establish compatibility with every 5.x release or in-game behavior with a connected player. No stable release has been published from this migration.
+The plugin now packages the released [NhanAZ BlockData library](https://github.com/NhanAZ-Libraries/BlockData) through DevTools. The source passes PHPStan at maximum level against both the declared API minimum and the newer revision pinned in [CI](.github/workflows/validate.yml). A local PHAR built with DevTools loaded and stopped cleanly on an isolated server. The verified CI PHAR also delivered one configured level 1 generator item to a first-time connected player in an isolated Axolotl-PM 5.49.1 session. These checks do not establish compatibility with every 5.x release or connected-player placement, breaking, and regeneration. No stable release has been published from this migration.
 
 The manifest declares plugin API `5.0.0`. That declaration does not establish support for every Axolotl-PM 5.x release. Keep production worlds and plugin data separate from migration tests.
 
@@ -15,7 +15,7 @@ The manifest declares plugin API `5.0.0`. That declaration does not establish su
 - Choose an ore from the configured weights and regenerate it after the configured delay when a generated block is broken.
 - Play optional sounds for invalid placement and new resources.
 
-The data migration has been checked with a synthetic legacy LevelDB database and an isolated server restart. Synthetic server events also covered placement, breaking, and regeneration. These flows still need testing with a connected player. The `ownerMode` and `durability` configuration values are present, but the source does not enforce ownership or wear. Do not treat them as active protection.
+The data migration has been checked with a synthetic legacy LevelDB database and an isolated server restart. Synthetic server events also covered placement, breaking, and regeneration. A connected first join delivered the configured item; placement, breaking, and regeneration still need a connected-player test. The `ownerMode` and `durability` configuration values are present, but the source does not enforce ownership or wear. Do not treat them as active protection.
 
 ## Configuration
 
@@ -43,7 +43,7 @@ php tests/default-block.php
 php tests/legacy-storage.php virions/BlockData/vendor/autoload.php
 ```
 
-The legacy storage fixture needs the released BlockData checkout and its Composer dependencies. The workflow checks these fixtures, PHPStan max, and a DevTools PHAR build, then uploads the verified PHAR as a temporary CI artifact. The isolated server probe also verified exact NBT decoding, JSON persistence, deletion markers, restart behavior, retention of the old record, and synthetic placement and break events. It did not use a connected player.
+The legacy storage fixture needs the released BlockData checkout and its Composer dependencies. The workflow checks these fixtures, PHPStan max, and a DevTools PHAR build, then uploads the verified PHAR as a temporary CI artifact. The isolated server probe verified exact NBT decoding, JSON persistence, deletion markers, restart behavior, retention of the old record, and synthetic placement and break events. A separate connected-player probe verified first-join item delivery using the CI PHAR; it did not exercise placement or breaking.
 
 ## License and support
 
