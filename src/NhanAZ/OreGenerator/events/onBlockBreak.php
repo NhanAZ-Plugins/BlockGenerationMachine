@@ -23,17 +23,22 @@ class onBlockBreak implements Listener {
 		$block = $event->getBlock();
 		$blockPos = $block->getPosition();
 		$getSideDOWN = $block->getSide(Facing::DOWN);
-		$storage = OreGenerator::getInstance()->getStorage();
-		try {
-			$data = $storage->get($blockPos);
-		} catch (RuntimeException $e) {
-			$event->cancel();
-			OreGenerator::getInstance()->getLogger()->error("Cannot read generator data at {$blockPos}: " . $e->getMessage());
+		$isMachine = $block->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER());
+		$isResource = $getSideDOWN->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER());
+		if (!$isMachine && !$isResource) {
 			return;
 		}
-		$parsedData = ParserData::parse($data ?? "");
+		$storage = OreGenerator::getInstance()->getStorage();
 
-		if ($block->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER())) {
+		if ($isMachine) {
+			try {
+				$data = $storage->get($blockPos);
+			} catch (RuntimeException $e) {
+				$event->cancel();
+				OreGenerator::getInstance()->getLogger()->error("Cannot read generator data at {$blockPos}: " . $e->getMessage());
+				return;
+			}
+			$parsedData = ParserData::parse($data ?? "");
 			if ($parsedData["isOreGenerator"]) {
 				if (!ConfigManager::canPlayerUseGenerator($parsedData["level"], $parsedData["owner"], $event->getPlayer()->getName())) {
 					$event->cancel();
@@ -56,6 +61,9 @@ class onBlockBreak implements Listener {
 			}
 		}
 
+		if (!$isResource) {
+			return;
+		}
 		try {
 			$data = $storage->get($getSideDOWN->getPosition());
 		} catch (RuntimeException $e) {
@@ -65,45 +73,43 @@ class onBlockBreak implements Listener {
 		}
 		$parsedData = ParserData::parse($data ?? "");
 
-		if ($getSideDOWN->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER())) {
-			$level = (int) $parsedData["level"];
-			if ($parsedData["isOreGenerator"]) {
-				if (!ConfigManager::canPlayerUseGenerator($level, $parsedData["owner"], $event->getPlayer()->getName())) {
-					$event->cancel();
-					$event->getPlayer()->sendMessage("Only the generator owner can break this resource.");
-					return;
-				}
-				$delayTicks = ConfigManager::getDelayTicks($level);
-				if ($delayTicks === null) {
-					OreGenerator::getInstance()->getLogger()->warning("Invalid delayTime for ore generator level {$level}");
-					return;
-				}
-				$generatorPos = $getSideDOWN->getPosition();
-				OreGenerator::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($event, $blockPos, $generatorPos, $data, $storage, $level) : void {
-					if ($event->isCancelled() || !$blockPos->getWorld()->getBlock($blockPos)->hasSameTypeId(VanillaBlocks::AIR())) {
-						return;
-					}
-					if (!$generatorPos->getWorld()->getBlock($generatorPos)->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER())) {
-						return;
-					}
-					try {
-						if ($storage->get($generatorPos) !== $data) {
-							return;
-						}
-					} catch (RuntimeException $e) {
-						OreGenerator::getInstance()->getLogger()->error("Cannot read generator data at {$generatorPos}: " . $e->getMessage());
-						return;
-					}
-					$block = OreGenerator::getInstance()->randomOre($level);
-					if (is_null($block)) {
-						return;
-					}
-					$blockPos->getWorld()->setBlock($blockPos, $block);
-					if (OreGenerator::getInstance()->getConfig()->getNested("sounds.newResource")) {
-						Sound::playFizz($blockPos);
-					}
-				}), $delayTicks);
+		$level = (int) $parsedData["level"];
+		if ($parsedData["isOreGenerator"]) {
+			if (!ConfigManager::canPlayerUseGenerator($level, $parsedData["owner"], $event->getPlayer()->getName())) {
+				$event->cancel();
+				$event->getPlayer()->sendMessage("Only the generator owner can break this resource.");
+				return;
 			}
+			$delayTicks = ConfigManager::getDelayTicks($level);
+			if ($delayTicks === null) {
+				OreGenerator::getInstance()->getLogger()->warning("Invalid delayTime for ore generator level {$level}");
+				return;
+			}
+			$generatorPos = $getSideDOWN->getPosition();
+			OreGenerator::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($event, $blockPos, $generatorPos, $data, $storage, $level) : void {
+				if ($event->isCancelled() || !$blockPos->getWorld()->getBlock($blockPos)->hasSameTypeId(VanillaBlocks::AIR())) {
+					return;
+				}
+				if (!$generatorPos->getWorld()->getBlock($generatorPos)->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER())) {
+					return;
+				}
+				try {
+					if ($storage->get($generatorPos) !== $data) {
+						return;
+					}
+				} catch (RuntimeException $e) {
+					OreGenerator::getInstance()->getLogger()->error("Cannot read generator data at {$generatorPos}: " . $e->getMessage());
+					return;
+				}
+				$block = OreGenerator::getInstance()->randomOre($level);
+				if (is_null($block)) {
+					return;
+				}
+				$blockPos->getWorld()->setBlock($blockPos, $block);
+				if (OreGenerator::getInstance()->getConfig()->getNested("sounds.newResource")) {
+					Sound::playFizz($blockPos);
+				}
+			}), $delayTicks);
 		}
 	}
 }

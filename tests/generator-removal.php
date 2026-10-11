@@ -156,12 +156,16 @@ namespace NhanAZ\OreGenerator {
     final class TestStorage {
         /** @var array<string, string> */
         private array $values = [];
+        public bool $failReads = false;
 
         public function set(Position $position, string $value) : void {
             $this->values[$position->key()] = $value;
         }
 
         public function get(Position $position) : ?string {
+            if ($this->failReads) {
+                throw new \RuntimeException('Storage is unavailable');
+            }
             return $this->values[$position->key()] ?? null;
         }
 
@@ -242,6 +246,17 @@ namespace {
     require dirname(__DIR__) . '/src/NhanAZ/OreGenerator/utils/ParserData.php';
     require dirname(__DIR__) . '/src/NhanAZ/OreGenerator/events/onBlockBreak.php';
 
+    $plugin = new \NhanAZ\OreGenerator\OreGenerator();
+    $world = new \pocketmine\world\World();
+    $unrelated = new \pocketmine\world\Position(3, 64, 3, $world);
+    $world->setBlock($unrelated, new \pocketmine\block\Block('cobblestone', $unrelated));
+    $plugin->getStorage()->failReads = true;
+    $unrelatedEvent = new \pocketmine\event\block\BlockBreakEvent($world->getBlock($unrelated));
+    (new \NhanAZ\OreGenerator\events\onBlockBreak())->onBreak($unrelatedEvent);
+    if ($unrelatedEvent->isCancelled()) {
+        throw new \RuntimeException('Unrelated block break was cancelled by generator storage');
+    }
+
     foreach (['intact', 'removed', 'metadata-replaced'] as $scenario) {
         $plugin = new \NhanAZ\OreGenerator\OreGenerator();
         $world = new \pocketmine\world\World();
@@ -307,5 +322,5 @@ namespace {
         throw new \RuntimeException('Shared generator did not regenerate after visitor break');
     }
 
-    echo "Regeneration requires original metadata and enforces owner mode\n";
+    echo "Unrelated breaks skip generator storage; regeneration and owner mode remain enforced\n";
 }
