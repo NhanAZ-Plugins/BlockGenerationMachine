@@ -15,7 +15,7 @@ The manifest declares plugin API `5.0.0`. That declaration does not establish su
 - Choose an ore from the configured weights and regenerate it after the configured delay when a generated block is broken.
 - Play optional sounds for invalid placement and new resources.
 
-The data migration has been checked with a synthetic legacy LevelDB database and an isolated server restart. Synthetic server events also covered placement, breaking, and regeneration. A connected first join delivered the configured item; placement, breaking, and regeneration still need a connected-player test. The `ownerMode` and `durability` configuration values are present, but the source does not enforce ownership or wear. Do not treat them as active protection.
+The data migration has been checked with a synthetic legacy LevelDB database and an isolated server restart. Synthetic server events also covered placement, breaking, and regeneration. A connected first join delivered the configured item, and saved player data still contained one generator after a return visit. The headless client did not receive a populated inventory packet on that return, so client-visible persistence remains unverified. Placement, breaking, and regeneration still need a connected-player test. The `ownerMode` and `durability` configuration values are present, but the source does not enforce ownership or wear. Do not treat them as active protection.
 
 ## Configuration
 
