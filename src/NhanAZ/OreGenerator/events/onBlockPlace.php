@@ -21,36 +21,43 @@ class onBlockPlace implements Listener {
 	const HIGHEST_BUILDABLE_Y = 319;
 
 	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$block = $event->getBlock();
 		$item = $event->getItem();
+		$block = null;
+		foreach ($event->getTransaction()->getBlocks() as [, , , $candidate]) {
+			if ($candidate->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER())) {
+				$block = $candidate;
+				break;
+			}
+		}
+		if ($block === null) {
+			return;
+		}
 		$blockPos = $block->getPosition();
 		$getSideUP = $block->getSide(Facing::UP);
-		if ($block->isSameType(VanillaBlocks::LEGACY_STONECUTTER())) {
-			if (!$item->hasCustomBlockData()) {
+		if (!$item->hasCustomBlockData()) {
+			return;
+		}
+		if (is_null($item->getCustomBlockData())) {
+			return;
+		}
+		$tempData = $item->getCustomBlockData()->getString("data");
+		$data = ParserData::parse($tempData);
+		if ($data["isOreGenerator"]) {
+			if ($blockPos->y == self::HIGHEST_BUILDABLE_Y) {
+				OreGenerator::getInstance()->onInvalidPosition($event, $blockPos);
 				return;
 			}
-			if (is_null($item->getCustomBlockData())) {
+			if ($getSideUP->hasSameTypeId(VanillaBlocks::AIR())) {
+				$data = new OreGeneratorData($tempData);
+				OreGenerator::getInstance()->getManager()->get($blockPos->getWorld())->setBlockDataAt((int) $blockPos->x, (int) $blockPos->y, (int) $blockPos->z, $data);
+				if (OreGenerator::getInstance()->getConfig()->getNested("sounds.invalidPosition")) {
+					Sound::playFizz($blockPos);
+				}
+				$block = ConfigManager::getDefaultBlock();
+				$blockPos->getWorld()->setBlock($blockPos->add(0, 1, 0), $block);
+			} else {
+				OreGenerator::getInstance()->onInvalidPosition($event, $blockPos);
 				return;
-			}
-			$tempData = $item->getCustomBlockData()->getString("data");
-			$data = ParserData::parse($tempData);
-			if ($data["isOreGenerator"]) {
-				if ($blockPos->y == self::HIGHEST_BUILDABLE_Y) {
-					OreGenerator::getInstance()->onInvalidPosition($event, $blockPos);
-					return;
-				}
-				if ($getSideUP->isSameType(VanillaBlocks::AIR())) {
-					$data = new OreGeneratorData($tempData);
-					OreGenerator::getInstance()->getManager()->get($blockPos->getWorld())->setBlockDataAt((int) $blockPos->x, (int) $blockPos->y, (int) $blockPos->z, $data);
-					if (OreGenerator::getInstance()->getConfig()->getNested("sounds.invalidPosition")) {
-						Sound::playFizz($blockPos);
-					}
-					$block = ConfigManager::getDefaultBlock();
-					$blockPos->getWorld()->setBlock($blockPos->add(0, 1, 0), $block);
-				} else {
-					OreGenerator::getInstance()->onInvalidPosition($event, $blockPos);
-					return;
-				}
 			}
 		}
 	}

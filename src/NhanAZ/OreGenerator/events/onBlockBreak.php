@@ -29,11 +29,10 @@ class onBlockBreak implements Listener {
 		if (!($data instanceof OreGeneratorData)) {
 			$data = new OreGeneratorData();
 		}
-		var_dump($data->getData());
 		$parsedData = ParserData::parse($data->getData());
 		
 
-		if ($block->isSameType(VanillaBlocks::LEGACY_STONECUTTER())) {
+		if ($block->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER())) {
 			if ($parsedData["isOreGenerator"]) {
 				$block = VanillaBlocks::LEGACY_STONECUTTER();
 				$item = $block->asItem();
@@ -53,7 +52,7 @@ class onBlockBreak implements Listener {
 		}
 		$parsedData = ParserData::parse($data->getData());
 
-		if ($getSideDOWN->isSameType(VanillaBlocks::LEGACY_STONECUTTER())) {
+		if ($getSideDOWN->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER())) {
 			$level = (int) $parsedData["level"];
 			if ($parsedData["isOreGenerator"]) {
 				OreGenerator::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($blockPos, $level) : void {
