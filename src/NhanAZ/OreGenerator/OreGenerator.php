@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace NhanAZ\OreGenerator;
 
-use cosmicpe\blockdata\BlockDataFactory;
-use cosmicpe\blockdata\world\BlockDataWorldManager;
 use NhanAZ\OreGenerator\config\ConfigManager;
-use NhanAZ\OreGenerator\data\OreGeneratorData;
+use NhanAZ\OreGenerator\data\GeneratorStorage;
 use NhanAZ\OreGenerator\events\onBlockBreak;
 use NhanAZ\OreGenerator\events\onBlockPlace;
 use NhanAZ\OreGenerator\events\onPlayerJoin;
@@ -30,9 +28,7 @@ use function is_string;
 class OreGenerator extends PluginBase {
 	use SingletonTrait;
 
-	private const ORE_GENERATOR = "ore_generator";
-
-	private BlockDataWorldManager $manager;
+	private GeneratorStorage $storage;
 
 	protected function onLoad() : void {
 		self::setInstance($this);
@@ -40,20 +36,21 @@ class OreGenerator extends PluginBase {
 
 	protected function onEnable() : void {
 		$this->saveDefaultConfig();
+		$this->storage = new GeneratorStorage($this);
 		$this->registerEvents();
-		$this->setupBlockDataVirion();
 		ConfigManager::checkConfigFileds();
+	}
+
+	protected function onDisable() : void {
+		if (isset($this->storage)) {
+			$this->storage->close();
+		}
 	}
 
 	private function registerEvents() : void {
 		$this->getServer()->getPluginManager()->registerEvents(new onPlayerJoin(), $this);
 		$this->getServer()->getPluginManager()->registerEvents(new onBlockPlace(), $this);
 		$this->getServer()->getPluginManager()->registerEvents(new onBlockBreak(), $this);
-	}
-
-	private function setupBlockDataVirion() : void {
-		BlockDataFactory::register(self::ORE_GENERATOR, OreGeneratorData::class);
-		$this->manager = BlockDataWorldManager::create($this);
 	}
 
 	public function handleCustomName(int $level) : string {
@@ -98,7 +95,7 @@ class OreGenerator extends PluginBase {
 		return $ore === null ? null : StringToBlock::parse($ore);
 	}
 
-	public function getManager() : BlockDataWorldManager {
-		return $this->manager;
+	public function getStorage() : GeneratorStorage {
+		return $this->storage;
 	}
 }

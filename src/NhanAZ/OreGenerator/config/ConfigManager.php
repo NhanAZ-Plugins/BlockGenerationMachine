@@ -9,6 +9,8 @@ use NhanAZ\OreGenerator\utils\StringToBlock;
 use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use function get_debug_type;
+use function intdiv;
+use function is_int;
 use function is_string;
 
 class ConfigManager {
@@ -30,5 +32,13 @@ class ConfigManager {
 			}
 		}
 		return VanillaBlocks::COBBLESTONE();
+	}
+
+	public static function getDelayTicks(int $level) : ?int {
+		$seconds = OreGenerator::getInstance()->getConfig()->getNested("oreGenerators.level_{$level}.delayTime");
+		if (!is_int($seconds) || $seconds < 1 || $seconds > intdiv(PHP_INT_MAX, 20)) {
+			return null;
+		}
+		return $seconds * 20;
 	}
 }

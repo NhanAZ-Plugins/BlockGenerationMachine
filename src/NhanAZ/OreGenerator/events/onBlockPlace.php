@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace NhanAZ\OreGenerator\events;
 
 use NhanAZ\OreGenerator\config\ConfigManager;
-use NhanAZ\OreGenerator\data\OreGeneratorData;
 use NhanAZ\OreGenerator\OreGenerator;
 use NhanAZ\OreGenerator\utils\ParserData;
 use NhanAZ\OreGenerator\utils\Sound;
@@ -13,6 +12,7 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\math\Facing;
+use pocketmine\scheduler\ClosureTask;
 use function is_null;
 
 class onBlockPlace implements Listener {
@@ -48,13 +48,21 @@ class onBlockPlace implements Listener {
 				return;
 			}
 			if ($getSideUP->hasSameTypeId(VanillaBlocks::AIR())) {
-				$data = new OreGeneratorData($tempData);
-				OreGenerator::getInstance()->getManager()->get($blockPos->getWorld())->setBlockDataAt((int) $blockPos->x, (int) $blockPos->y, (int) $blockPos->z, $data);
-				if (OreGenerator::getInstance()->getConfig()->getNested("sounds.invalidPosition")) {
-					Sound::playFizz($blockPos);
-				}
-				$block = ConfigManager::getDefaultBlock();
-				$blockPos->getWorld()->setBlock($blockPos->add(0, 1, 0), $block);
+				OreGenerator::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($event, $blockPos, $tempData) : void {
+					if ($event->isCancelled()) {
+						return;
+					}
+					$world = $blockPos->getWorld();
+					if (!$world->getBlock($blockPos)->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER()) ||
+						!$world->getBlock($blockPos->add(0, 1, 0))->hasSameTypeId(VanillaBlocks::AIR())) {
+						return;
+					}
+					OreGenerator::getInstance()->getStorage()->set($blockPos, $tempData);
+					if (OreGenerator::getInstance()->getConfig()->getNested("sounds.invalidPosition")) {
+						Sound::playFizz($blockPos);
+					}
+					$world->setBlock($blockPos->add(0, 1, 0), ConfigManager::getDefaultBlock());
+				}), 1);
 			} else {
 				OreGenerator::getInstance()->onInvalidPosition($event, $blockPos);
 				return;

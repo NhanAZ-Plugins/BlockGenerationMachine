@@ -52,9 +52,14 @@ namespace pocketmine\item {
 namespace NhanAZ\OreGenerator {
 	final class TestConfig {
 		public mixed $defaultBlock = 'stone';
+		public mixed $delayTime = 3;
 
 		public function get(string $key) : mixed {
 			return $this->defaultBlock;
+		}
+
+		public function getNested(string $key) : mixed {
+			return $this->delayTime;
 		}
 	}
 
@@ -123,5 +128,18 @@ namespace {
 		throw new \RuntimeException('Invalid block diagnostics or null handling failed.');
 	}
 
-	echo "PASS: modern, legacy, and three invalid default blocks\n";
+	foreach ([1 => 20, 3 => 60] as $seconds => $ticks) {
+		$plugin->config->delayTime = $seconds;
+		if (ConfigManager::getDelayTicks(1) !== $ticks) {
+			throw new \RuntimeException('Configured seconds were not converted to ticks.');
+		}
+	}
+	foreach ([0, -1, '3', [], null, intdiv(PHP_INT_MAX, 20) + 1] as $invalid) {
+		$plugin->config->delayTime = $invalid;
+		if (ConfigManager::getDelayTicks(1) !== null) {
+			throw new \RuntimeException('Invalid delayTime was accepted.');
+		}
+	}
+
+	echo "PASS: modern, legacy, invalid default blocks, and delay seconds\n";
 }

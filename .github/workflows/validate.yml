@@ -25,6 +25,14 @@ jobs:
           path: .devtools-dependencies/axolotl-pm
           persist-credentials: false
 
+      - name: Check out released BlockData virion
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: NhanAZ-Libraries/BlockData
+          ref: 7df7273d462864e55a7cb59c5d1043378570f880 # v1.0.1
+          path: virions/BlockData
+          persist-credentials: false
+
       - name: Set up Axolotl-PM PHP environment
         uses: axolotl-pm/setup-php-action@b8c3f9add4f2ad4a5e2624a1112aba899ee8db0e
         with:
@@ -44,9 +52,16 @@ jobs:
           php tests/weighted-ore-selector.php
           php tests/default-block.php
 
+      - name: Install pinned BlockData test dependencies
+        run: composer install --working-dir=virions/BlockData --no-dev --no-interaction --prefer-dist --no-scripts
+
+      - name: Verify legacy NBT migration reader
+        run: php tests/legacy-storage.php virions/BlockData/vendor/autoload.php
+
       - name: Analyze plugin at PHPStan maximum level
         uses: NhanAZ/DevTools@6606444fc32787a3e50275fdb668c2310e899740 # v1.0.3
         with:
           project: .
+          virions: virions
           phpstan: max
           phpstan-server: .devtools-dependencies/axolotl-pm
