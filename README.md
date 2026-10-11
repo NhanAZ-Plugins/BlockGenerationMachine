@@ -21,7 +21,9 @@ A connected first join delivered the configured item. After a server restart, sa
 
 In a separate isolated session, the client broke the resource and then the generator before a ten-second regeneration delay ended. It received air updates for both positions and no later ore update during the observed interval. This verifies the tested level 1 paths, not every ore weight, world, or player interaction.
 
-With `ownerMode: true`, placement and breaking of the machine or its resource require the recorded owner; `ownerMode: false` permits shared use. A missing or invalid owner mode is treated as protected. Source fixtures cover these decisions. On an isolated server with `ownerMode: true`, a connected non-owner could neither place an owner-marked generator item nor break an existing generator or its resource; the owner could break both blocks. In a separate shared-mode session, a connected non-owner broke the resource and machine; the dropped generator item kept its recorded owner, level, and durability metadata. These connected checks cover the tested level 1 configuration, not every world or player interaction. The `durability` value is stored but wear is not enforced.
+With `ownerMode: true`, placement and breaking of the machine or its resource require the recorded owner; `ownerMode: false` permits shared use. A missing or invalid owner mode is treated as protected. Source fixtures cover these decisions. On an isolated server with `ownerMode: true`, a connected non-owner could neither place an owner-marked generator item nor break an existing generator or its resource; the owner could break both blocks.
+
+In a separate shared-mode session, a connected non-owner broke the resource and machine; the dropped generator item kept its recorded owner, level, and durability metadata. The non-owner then placed an item bearing the original owner's metadata; the machine and resource appeared, and the stored metadata retained that owner. These connected checks cover the tested level 1 configuration, not every world or player interaction. The `durability` value is stored but wear is not enforced.
 
 ## Configuration
 
