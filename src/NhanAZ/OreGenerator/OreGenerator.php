@@ -24,7 +24,8 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\world\Position;
 use function is_array;
 use function str_replace;
-use function strval;
+use function is_int;
+use function is_string;
 
 class OreGenerator extends PluginBase {
 	use SingletonTrait;
@@ -56,7 +57,8 @@ class OreGenerator extends PluginBase {
 	}
 
 	public function handleCustomName(int $level) : string {
-		$customName = strval($this->getConfig()->get("customName"));
+		$configured = $this->getConfig()->get("customName");
+		$customName = is_string($configured) ? $configured : "Ore Generator Level {level}";
 		$customName = str_replace("{level}", "{$level}", $customName);
 		return $customName;
 	}
@@ -74,7 +76,11 @@ class OreGenerator extends PluginBase {
 		$compound = new CompoundTag();
 
 		$owner = $player->getName();
-		$durability = $durability ?? intval($this->getConfig()->getNested("oreGenerators.level_{$level}.durability"));
+		$configuredDurability = $this->getConfig()->getNested("oreGenerators.level_{$level}.durability");
+		$durability = $durability ?? (is_int($configuredDurability) && $configuredDurability >= 0 ? $configuredDurability : 0);
+		if ($durability < 0) {
+			return;
+		}
 
 		$nbt = $compound->setString("data", "isOreGenerator:true owner:{$owner} level:{$level} durability:{$durability}");
 		$item->setCustomBlockData($nbt);
