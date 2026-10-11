@@ -66,4 +66,27 @@ if ($database->get('b' . World::blockHash(3, 64, -2)) !== $serializer->write(new
 }
 unset($database);
 
-echo "PASS: exact legacy NBT, unrelated data, missing data, malformed data, and retained record\n";
+$lockedPath = $folder . 'blockdata/lockedworld';
+if (!is_dir($lockedPath) && !mkdir($lockedPath, 0777, true) && !is_dir($lockedPath)) {
+	throw new RuntimeException('Could not create locked fixture database.');
+}
+$lockedDatabase = new LevelDB($lockedPath, ['create_if_missing' => true]);
+$lockedWorld = (new ReflectionClass(World::class))->newInstanceWithoutConstructor();
+(new ReflectionProperty(World::class, 'folderName'))->setValue($lockedWorld, 'lockedworld');
+$lockedPosition = new Position(0, 64, 0, $lockedWorld);
+$lockedReader = new LegacyBlockDataReader($folder);
+try {
+	$lockedReader->read($lockedPosition);
+	throw new RuntimeException('Locked legacy database was silently accepted.');
+} catch (RuntimeException $e) {
+	if (!str_contains($e->getMessage(), 'Cannot open legacy generator data')) {
+		throw $e;
+	}
+}
+unset($lockedDatabase);
+if ($lockedReader->read($lockedPosition) !== null) {
+	throw new RuntimeException('Legacy reader did not recover after database unlock.');
+}
+$lockedReader->close();
+
+echo "PASS: exact legacy NBT, unrelated/missing/malformed data, retained record, and locked DB recovery\n";

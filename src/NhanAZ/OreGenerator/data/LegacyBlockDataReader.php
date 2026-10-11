@@ -30,14 +30,22 @@ final class LegacyBlockDataReader {
 				$this->databases[$name] = false;
 				return null;
 			}
-			$this->databases[$name] = new LevelDB($path, ["create_if_missing" => false]);
+			try {
+				$this->databases[$name] = new LevelDB($path, ["create_if_missing" => false]);
+			} catch (Throwable $e) {
+				throw new RuntimeException("Cannot open legacy generator data in world '{$name}'", 0, $e);
+			}
 		}
 		$database = $this->databases[$name];
 		if ($database === false) {
 			return null;
 		}
 		$key = "b" . World::blockHash($position->getFloorX(), $position->getFloorY(), $position->getFloorZ());
-		$raw = $database->get($key);
+		try {
+			$raw = $database->get($key);
+		} catch (Throwable $e) {
+			throw new RuntimeException("Cannot read legacy generator data in world '{$name}'", 0, $e);
+		}
 		if ($raw === false) {
 			return null;
 		}
