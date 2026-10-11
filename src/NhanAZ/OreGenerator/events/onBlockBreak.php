@@ -68,8 +68,20 @@ class onBlockBreak implements Listener {
 					OreGenerator::getInstance()->getLogger()->warning("Invalid delayTime for ore generator level {$level}");
 					return;
 				}
-				OreGenerator::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($event, $blockPos, $level) : void {
+				$generatorPos = $getSideDOWN->getPosition();
+				OreGenerator::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($event, $blockPos, $generatorPos, $data, $storage, $level) : void {
 					if ($event->isCancelled() || !$blockPos->getWorld()->getBlock($blockPos)->hasSameTypeId(VanillaBlocks::AIR())) {
+						return;
+					}
+					if (!$generatorPos->getWorld()->getBlock($generatorPos)->hasSameTypeId(VanillaBlocks::LEGACY_STONECUTTER())) {
+						return;
+					}
+					try {
+						if ($storage->get($generatorPos) !== $data) {
+							return;
+						}
+					} catch (RuntimeException $e) {
+						OreGenerator::getInstance()->getLogger()->error("Cannot read generator data at {$generatorPos}: " . $e->getMessage());
 						return;
 					}
 					$block = OreGenerator::getInstance()->randomOre($level);

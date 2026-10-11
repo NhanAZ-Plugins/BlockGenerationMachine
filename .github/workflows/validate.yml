@@ -52,6 +52,9 @@ jobs:
           php tests/weighted-ore-selector.php
           php tests/default-block.php
 
+      - name: Check regeneration after generator removal
+        run: php tests/generator-removal.php
+
       - name: Install pinned BlockData test dependencies
         run: composer install --working-dir=virions/BlockData --no-dev --no-interaction --prefer-dist --no-scripts
 
