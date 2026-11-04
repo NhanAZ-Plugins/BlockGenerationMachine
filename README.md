@@ -7,9 +7,6 @@ Experimental ore generator plugin source for Axolotl-PM, pending BlockData migra
 [![License](https://img.shields.io/github/license/NhanAZ-Plugins/BlockGenerationMachine)](https://github.com/NhanAZ-Plugins/BlockGenerationMachine/blob/master/LICENSE)
 [![Discord](https://img.shields.io/discord/986553214889517088?label=Discord&logo=discord&logoColor=white&color=5865F2)](https://discord.gg/j2X83ujT6c)
 
-## Overview
-
-This is an experimental repository. Review its documented limitations before using it on a live server.
 
 ## Current status
 
