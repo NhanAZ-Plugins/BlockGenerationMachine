@@ -1,6 +1,15 @@
-# Block Generation Machine
+# BlockGenerationMachine
 
-Block Generation Machine is an experimental ore generator plugin for Axolotl-PM. Its plugin manifest names the runtime plugin `OreGenerator`.
+Experimental ore generator plugin source for Axolotl-PM, pending BlockData migration
+
+[![CI](https://github.com/NhanAZ-Plugins/BlockGenerationMachine/actions/workflows/validate.yml/badge.svg)](https://github.com/NhanAZ-Plugins/BlockGenerationMachine/actions/workflows/validate.yml)
+[![Latest release](https://img.shields.io/github/v/release/NhanAZ-Plugins/BlockGenerationMachine)](https://github.com/NhanAZ-Plugins/BlockGenerationMachine/releases/latest)
+[![License](https://img.shields.io/github/license/NhanAZ-Plugins/BlockGenerationMachine)](https://github.com/NhanAZ-Plugins/BlockGenerationMachine/blob/master/LICENSE)
+[![Discord](https://img.shields.io/discord/986553214889517088?label=Discord&logo=discord&logoColor=white&color=5865F2)](https://discord.gg/j2X83ujT6c)
+
+## Overview
+
+This is an experimental repository. Review its documented limitations before using it on a live server.
 
 ## Current status
 
