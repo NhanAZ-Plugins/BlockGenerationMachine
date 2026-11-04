@@ -66,3 +66,8 @@ The legacy storage fixture needs the released BlockData checkout and its Compose
 ## License and support
 
 This repository contains the [GNU GPL version 3 license](LICENSE). Preserve notices for any dependency used in a future build. For project support, visit [NhanAZ Discord](https://discord.gg/j2X83ujT6c).
+
+
+## Credits
+
+Authors: NhanAZ.
