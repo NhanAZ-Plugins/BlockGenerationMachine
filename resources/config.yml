@@ -7,7 +7,7 @@ firstJoin:
 
 # Custom name of ore generator item
 # {level} : Level of ore generator
-customName: "§f[§o§bOre Generator §aLevel §c{level}§r§f]§r"
+customName: "Ore Generator Level {level}"
 
 # First block is generated when player places ore generator.
 defaultBlock: "cobblestone"
